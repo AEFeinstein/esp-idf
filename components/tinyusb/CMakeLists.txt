@@ -68,6 +68,13 @@ if(CONFIG_TINYUSB)
             "additions/src/vfs_tinyusb.c"
             )
     endif() # CONFIG_TINYUSB_CDC_ENABLED
+
+    if(CONFIG_TINYUSB_HID_ENABLED)
+        list(APPEND srcs
+            "additions/src/tusb_hid_gamepad.c"
+            )
+    endif() # CONFIG_TINYUSB_CDC_ENABLED
+
 endif() # CONFIG_TINYUSB
 
 idf_component_register(SRCS ${srcs}
