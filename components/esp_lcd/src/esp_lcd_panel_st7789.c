@@ -24,12 +24,14 @@ static const char *TAG = "lcd_panel.st7789";
 static esp_err_t panel_st7789_del(esp_lcd_panel_t *panel);
 static esp_err_t panel_st7789_reset(esp_lcd_panel_t *panel);
 static esp_err_t panel_st7789_init(esp_lcd_panel_t *panel);
+static esp_err_t panel_st7735_init(esp_lcd_panel_t *panel);
 static esp_err_t panel_st7789_draw_bitmap(esp_lcd_panel_t *panel, int x_start, int y_start, int x_end, int y_end, const void *color_data);
 static esp_err_t panel_st7789_invert_color(esp_lcd_panel_t *panel, bool invert_color_data);
 static esp_err_t panel_st7789_mirror(esp_lcd_panel_t *panel, bool mirror_x, bool mirror_y);
 static esp_err_t panel_st7789_swap_xy(esp_lcd_panel_t *panel, bool swap_axes);
 static esp_err_t panel_st7789_set_gap(esp_lcd_panel_t *panel, int x_gap, int y_gap);
 static esp_err_t panel_st7789_disp_off(esp_lcd_panel_t *panel, bool off);
+static esp_err_t esp_lcd_new_panel_st77xx(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config, bool isST7789, esp_lcd_panel_handle_t *ret_panel);
 
 typedef struct {
     esp_lcd_panel_t base;
@@ -43,7 +45,17 @@ typedef struct {
     uint8_t colmod_cal; // save surrent value of LCD_CMD_COLMOD register
 } st7789_panel_t;
 
+esp_err_t esp_lcd_new_panel_st7735(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config, esp_lcd_panel_handle_t *ret_panel)
+{
+    return esp_lcd_new_panel_st77xx(io, panel_dev_config, false, ret_panel);
+}
+
 esp_err_t esp_lcd_new_panel_st7789(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config, esp_lcd_panel_handle_t *ret_panel)
+{
+    return esp_lcd_new_panel_st77xx(io, panel_dev_config, true, ret_panel);
+}
+
+static esp_err_t esp_lcd_new_panel_st77xx(const esp_lcd_panel_io_handle_t io, const esp_lcd_panel_dev_config_t *panel_dev_config, bool isST7789, esp_lcd_panel_handle_t *ret_panel)
 {
     esp_err_t ret = ESP_OK;
     st7789_panel_t *st7789 = NULL;
@@ -89,7 +101,14 @@ esp_err_t esp_lcd_new_panel_st7789(const esp_lcd_panel_io_handle_t io, const esp
     st7789->reset_level = panel_dev_config->flags.reset_active_high;
     st7789->base.del = panel_st7789_del;
     st7789->base.reset = panel_st7789_reset;
-    st7789->base.init = panel_st7789_init;
+    if(isST7789)
+    {
+        st7789->base.init = panel_st7789_init;
+    }
+    else
+    {
+        st7789->base.init = panel_st7735_init;
+    }
     st7789->base.draw_bitmap = panel_st7789_draw_bitmap;
     st7789->base.invert_color = panel_st7789_invert_color;
     st7789->base.set_gap = panel_st7789_set_gap;
@@ -156,6 +175,28 @@ static esp_err_t panel_st7789_init(esp_lcd_panel_t *panel)
         st7789->colmod_cal,
     }, 1);
     // turn on display
+    esp_lcd_panel_io_tx_param(io, LCD_CMD_DISPON, NULL, 0);
+
+    return ESP_OK;
+}
+
+static esp_err_t panel_st7735_init(esp_lcd_panel_t *panel)
+{
+    st7789_panel_t *st7789 = __containerof(panel, st7789_panel_t, base);
+    esp_lcd_panel_io_handle_t io = st7789->io;
+    esp_lcd_panel_io_tx_param(io, 0xC0, (uint8_t[]){0x23}, 1);
+    esp_lcd_panel_io_tx_param(io, 0xC1, (uint8_t[]){0x10}, 1);
+    esp_lcd_panel_io_tx_param(io, 0xC5, (uint8_t[]){0x3E, 0x28}, 2);
+    esp_lcd_panel_io_tx_param(io, 0xC7, (uint8_t[]){0x86}, 1);
+    esp_lcd_panel_io_tx_param(io, LCD_CMD_MADCTL, (uint8_t[]){st7789->madctl_val}, 1);
+    esp_lcd_panel_io_tx_param(io, LCD_CMD_COLMOD, (uint8_t[]){st7789->colmod_cal}, 1);
+    esp_lcd_panel_io_tx_param(io, 0x20, NULL, 0);
+    esp_lcd_panel_io_tx_param(io, 0xB1, (uint8_t[]){0x00, 0x18}, 2);
+    esp_lcd_panel_io_tx_param(io, 0xB6, (uint8_t[]){0x08, 0xA2, 0x27, 0x00}, 4);
+    esp_lcd_panel_io_tx_param(io, 0x26, (uint8_t[]){0x01}, 1);
+    esp_lcd_panel_io_tx_param(io, 0xE0, (uint8_t[]){0x0F, 0x31, 0x2B, 0x0C, 0x0E, 0x08, 0x4E, 0xF1, 0x37, 0x07, 0x10, 0x03, 0x0E, 0x09, 0x00}, 15);
+    esp_lcd_panel_io_tx_param(io, 0xE1, (uint8_t[]){0x00, 0x0E, 0x14, 0x03, 0x11, 0x07, 0x31, 0xC1, 0x48, 0x08, 0x0F, 0x0C, 0x31, 0x36, 0x0F}, 15);
+    esp_lcd_panel_io_tx_param(io, LCD_CMD_SLPOUT, NULL, 0);
     esp_lcd_panel_io_tx_param(io, LCD_CMD_DISPON, NULL, 0);
 
     return ESP_OK;
