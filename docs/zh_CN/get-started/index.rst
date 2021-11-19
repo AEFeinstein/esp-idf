@@ -137,6 +137,7 @@
         :maxdepth: 1
 
         ESP32-S3-DevKitC-1 <../hw-reference/esp32s3/user-guide-devkitc-1>
+        ESP32-S3-DevKitM-1 <../hw-reference/esp32s3/user-guide-devkitm-1>
 
 
 .. _get-started-step-by-step:
@@ -812,7 +813,6 @@ Windows 操作系统
     vscode-setup
     ../api-guides/tools/idf-monitor
     toolchain-setup-scratch
-    :esp32: ../get-started-legacy/index
 
 .. _Stable version: https://docs.espressif.com/projects/esp-idf/zh_CN/stable/
 .. _Releases page: https://github.com/espressif/esp-idf/releases

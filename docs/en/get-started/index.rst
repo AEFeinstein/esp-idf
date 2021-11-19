@@ -137,6 +137,7 @@ If you have one of {IDF_TARGET_NAME} development boards listed below, you can cl
         :maxdepth: 1
 
         ESP32-S3-DevKitC-1 <../hw-reference/esp32s3/user-guide-devkitc-1>
+        ESP32-S3-DevKitM-1 <../hw-reference/esp32s3/user-guide-devkitm-1>
 
 
 .. _get-started-step-by-step:
@@ -818,7 +819,6 @@ Related Documents
     vscode-setup
     ../api-guides/tools/idf-monitor
     toolchain-setup-scratch
-    :esp32: ../get-started-legacy/index
 
 .. _Stable version: https://docs.espressif.com/projects/esp-idf/en/stable/
 .. _Releases page: https://github.com/espressif/esp-idf/releases

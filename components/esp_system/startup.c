@@ -38,7 +38,7 @@
 /***********************************************/
 // Headers for other components init functions
 #include "nvs_flash.h"
-#include "esp_phy_init.h"
+
 #include "esp_coexist_internal.h"
 
 #if CONFIG_ESP_COREDUMP_ENABLE
@@ -70,6 +70,8 @@
 #include "esp32c3/clk.h"
 #elif CONFIG_IDF_TARGET_ESP32H2
 #include "esp32h2/clk.h"
+#elif CONFIG_IDF_TARGET_ESP8684
+#include "esp_private/esp_clk.h"
 #endif
 /***********************************************/
 
@@ -254,7 +256,8 @@ static void do_core_init(void)
     CONFIG_ESP32S2_BROWNOUT_DET || \
     CONFIG_ESP32S3_BROWNOUT_DET || \
     CONFIG_ESP32C3_BROWNOUT_DET || \
-    CONFIG_ESP32H2_BROWNOUT_DET
+    CONFIG_ESP32H2_BROWNOUT_DET || \
+    CONFIG_ESP8684_BROWNOUT_DET
     // [refactor-todo] leads to call chain rtc_is_register (driver) -> esp_intr_alloc (esp32/esp32s2) ->
     // malloc (newlib) -> heap_caps_malloc (heap), so heap must be at least initialized
     esp_brownout_init();
@@ -371,7 +374,7 @@ static void start_cpu0_default(void)
 
     ESP_EARLY_LOGI(TAG, "Pro cpu start user code");
     int cpu_freq = esp_clk_cpu_freq();
-    ESP_EARLY_LOGI(TAG, "cpu freq: %d", cpu_freq);
+    ESP_EARLY_LOGI(TAG, "cpu freq: %d Hz", cpu_freq);
 
     // Display information about the current running image.
     if (LOG_LOCAL_LEVEL >= ESP_LOG_INFO) {
